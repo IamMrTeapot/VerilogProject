@@ -127,7 +127,15 @@ module vga(
 	parameter G_HEIGHT_S = 117;
 	parameter G_HEIGHT_E = 480-29;
 	parameter BORDER_WIDTH = 2;
-	
+
+	parameter PADDLE_WIDTH = 5;
+	parameter PADDLE_HEIGHT = 60;
+	parameter PADDLE_GAP = 2
+	parameter PADDLE_LEFT_X = G_WIDTH_S + BORDER_WIDTH + PADDLE_GAP;
+	parameter PADDLE_LEFT_Y = G_HEIGHT_S + BORDER_WIDTH + 20;
+	parameter PADDLE_RIGHT_X = G_WIDTH_E - BORDER_WIDTH - PADDLE_GAP -PADDLE_WIDTH;
+	parameter PADDLE_RIGHT_Y = G_HEIGHT_S + BORDER_WIDTH + 100;
+
 	// register for Basys 3 12-bit RGB DAC 
 	reg [11:0] rgb_reg;
 	reg reset = 0;
@@ -154,14 +162,21 @@ module vga(
 	reg IS_IN_G_WIDTH = (x >= G_WIDTH_S && x <= G_WIDTH_E) ? 1 : 0;
 	reg IS_IN_G_HEIGHT = (y >= G_HEIGHT_S && y <= G_HEIGHT_E) ? 1 : 0;
 	reg IS_G_BORDER = ((x <= G_WIDTH_S+BORDER_WIDTH || x >= G_WIDTH_E-BORDER_WIDTH) || (y <= G_HEIGHT_S+BORDER_WIDTH || y >= G_HEIGHT_E-BORDER_WIDTH)) ? 1 : 0;
+	reg IS_PADDLE_LEFT = (x >= PADDLE_LEFT_X && x <= PADDLE_LEFT_X+PADDLE_WIDTH && y >= PADDLE_LEFT_Y && y <= PADDLE_LEFT_Y+PADDLE_HEIGHT) ? 1 : 0;
+	reg IS_PADDLE_RIGHT = (x >= PADDLE_RIGHT_X && x <= PADDLE_RIGHT_X+PADDLE_WIDTH && y >= PADDLE_RIGHT_Y && y <= PADDLE_RIGHT_Y+PADDLE_HEIGHT) ? 1 : 0;
 	
-	always @(posedge p_tick) begin
+	always @* begin
 		if(IS_IN_G_HEIGHT && IS_IN_G_WIDTH) begin
 			if (IS_G_BORDER) begin 
 				red = 15;
 				green = 3;
 				blue = 4;
 			end
+			else if (IS_PADDLE_LEFT || IS_PADDLE_RIGHT) begin 
+				red = 15;
+				green = 15;
+				blue = 15;
+			end 
 			else begin 
 				red = 3;
 				green = 3;
@@ -173,9 +188,11 @@ module vga(
 			green = 11;
 			blue = 1;
 		end
-
-		rgb_reg = {red,green,blue};
 	end	
+
+	always @(posedge p_tick) begin 
+		rgb_reg = {red,green,blue};
+	end
     
     // output
     assign rgb = (video_on) ? rgb_reg : 12'b0;
