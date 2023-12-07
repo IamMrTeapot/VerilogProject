@@ -140,24 +140,17 @@ module vga(
         );
         
     // compute gradient
+	// Stateless for now
     reg state = 0;
-	reg [11:0] top_color = 0;
-	always @(posedge clk) begin
-	   if (push[0]) state = !state; // change direction
-	   if (push[1]) top_color <= sw; // load more color to gradient
-	end
-
-	always @(posedge p_tick) // merge 2 colors with weighted average
-		if (!state) begin // vertical band
-			rgb_reg[3:0] <= (((WIDTH - x) * sw[3:0]) + (x * top_color[3:0])) / WIDTH; //B
-			rgb_reg[7:4] <= (((WIDTH - x) * sw[7:4]) + (x * top_color[7:4])) / WIDTH; //G
-			rgb_reg[11:8] <= (((WIDTH - x) * sw[11:8]) + (x * top_color[11:8])) / WIDTH; //R
-		end
-		else begin // horizontal band
-			rgb_reg[3:0] <= (((HEIGHT - y) * sw[3:0]) + (y * top_color[3:0])) / HEIGHT;
-			rgb_reg[7:4] <= (((HEIGHT - y) * sw[7:4]) + (y * top_color[7:4])) / HEIGHT;
-			rgb_reg[11:8] <= (((HEIGHT - y) * sw[11:8]) + (y * top_color[11:8])) / HEIGHT;
-		end
+	reg [3:0] red = 0;
+	reg [3:0] green = 0;
+	reg [3:0] blue = 0;
+	always @(posedge p_tick) begin
+		red = 15;
+		green = 11;
+		blue = 1;
+		rgb_reg = {red,green,blue};
+	end	
     
     // output
     assign rgb = (video_on) ? rgb_reg : 12'b0;
