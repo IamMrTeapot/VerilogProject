@@ -122,6 +122,11 @@ module vga(
 	
 	parameter WIDTH = 640;
 	parameter HEIGHT = 480;
+	parameter G_WIDTH_S = 55;
+	parameter G_WIDTH_E = 640-55;
+	parameter G_HEIGHT_S = 117;
+	parameter G_HEIGHT_E = 480-29;
+	parameter BORDER_WIDTH = 2;
 	
 	// register for Basys 3 12-bit RGB DAC 
 	reg [11:0] rgb_reg;
@@ -145,10 +150,30 @@ module vga(
 	reg [3:0] red = 0;
 	reg [3:0] green = 0;
 	reg [3:0] blue = 0;
+
+	reg IS_IN_G_WIDTH = (x >= G_WIDTH_S && x <= G_WIDTH_E) ? 1 : 0;
+	reg IS_IN_G_HEIGHT = (y >= G_HEIGHT_S && y <= G_HEIGHT_E) ? 1 : 0;
+	reg IS_G_BORDER = ((x <= G_WIDTH_S+BORDER_WIDTH || x >= G_WIDTH_E-BORDER_WIDTH) || (y <= G_HEIGHT_S+BORDER_WIDTH || y >= G_HEIGHT_E-BORDER_WIDTH)) ? 1 : 0;
+	
 	always @(posedge p_tick) begin
-		red = 15;
-		green = 11;
-		blue = 1;
+		if(IS_IN_G_HEIGHT && IS_IN_G_WIDTH) begin
+			if (IS_G_BORDER) begin 
+				red = 15;
+				green = 3;
+				blue = 4;
+			end
+			else begin 
+				red = 3;
+				green = 3;
+				blue = 12;
+			end
+		end
+		else begin
+			red = 15;
+			green = 11;
+			blue = 1;
+		end
+
 		rgb_reg = {red,green,blue};
 	end	
     
