@@ -123,7 +123,7 @@ module vga(
 	parameter WIDTH = 640;
 	parameter HEIGHT = 480;
 	
-	// register for Basys 2 8-bit RGB DAC 
+	// register for Basys 3 12-bit RGB DAC 
 	reg [11:0] rgb_reg;
 	reg reset = 0;
 	wire [9:0] x, y;
